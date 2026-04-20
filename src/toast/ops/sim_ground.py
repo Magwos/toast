@@ -125,12 +125,12 @@ class SimGround(Operator):
     )
 
     use_ephem = Bool(
-        True,
+        False,
         help="Use PyEphem to convert between horizontal and equatorial systems",
     )
 
     use_qpoint = Bool(
-        False,
+        True,
         help="Use qpoint to convert between horizontal and equatorial systems",
     )
 
