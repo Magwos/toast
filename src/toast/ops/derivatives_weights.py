@@ -202,19 +202,9 @@ class DerivativesWeights(Operator):
             # Get the per-detector pointing for orientation/sine theta purposes
             for idet, d in enumerate(dets):
                 theta, _, psi = to_iso_angles(mult(qbore, focalplane[d]["quat"]))
-                psi -= focalplane[d]["pol_angle"].value
-                # number_step = max(1, psi.shape[0] // 20)
-                # print("~~~~~~~~~~~~~~~~Second TEST PRINT: Det", d, 
-                #         "pol_ang (deg)", focalplane[d]["pol_ang"].value, focalplane[d]["pol_ang"].value % 180., 
-                #         "pol_angle (deg)", np.rad2deg(focalplane[d]["pol_angle"].value), flush=True)
-                # print("psi (deg) -- shape", np.rad2deg(psi % (2*np.pi)).shape, 
-                #         '-- max', np.max(psi % (2*np.pi))*180./np.pi,
-                #         '-- min', np.min(psi % (2*np.pi))*180./np.pi,
-                #         '-- mean', np.mean(psi % (2*np.pi))*180./np.pi,
-                #         '-- std', np.std(psi % (2*np.pi))*180./np.pi,
-                #         '-- sample (one every 1000)',
-                #         (psi[::number_step] % (2*np.pi))*180./np.pi, flush=True
-                # ) 
+                # psi -= focalplane[d]["pol_angle"].value
+                psi -= np.deg2rad(focalplane[d]["pol_ang"].value)
+
                 wc = np.cos(psi) 
                 wc2 = np.cos(2*psi)
                 ws = np.sin(psi)
@@ -236,7 +226,7 @@ class DerivativesWeights(Operator):
                 weights[:,1] = dx * ws - dy * wc #dtheta
                 weights[:,2] = -dx * wc - dy * ws + b_std**2 * (dp * ws2 - dc * wc2) * inv_tan_theta #dphi
                 if self.mode == "d2I":      
-                    weights[:,3] = b_std * dsigma + b_std * b_std * (dp * wc2 - dc * ws2) #d2theta ###w b_std * dsigma + 0.5 * b_std * b_std * (dp * wc2 - dc * ws2) #d2theta
+                    weights[:,3] = b_std * dsigma - b_std**2 * (dp * wc2 + dc * ws2) #d2theta 
                     weights[:,4] = b_std**2 * (-2.0 * dp * ws2 + 2.0 * dc * wc2) #dphi dtheta
                     weights[:,5] = b_std * dsigma +  b_std**2 * (dp * wc2 + dc * ws2) #dphi2
                 ob.detdata[self.weights][d, :] = weights
